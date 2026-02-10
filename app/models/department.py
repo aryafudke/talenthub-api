@@ -13,4 +13,8 @@ class Department(Base):
     updated_at = Column(DateTime, onupdate=func.now())
 
     #relationship - one department has many employees
-    #employees = relationship("Employee", back_populates="department")
+    employees = relationship("Employee", back_populates="department")
+    
+    
+    
+    

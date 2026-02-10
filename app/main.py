@@ -9,6 +9,7 @@
 
 from fastapi import FastAPI
 from app.routers import auth, departments
+from app.routers.employees import router as employees_router
 
 app = FastAPI(
     title="TalentHub API",
@@ -18,6 +19,7 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(departments.router)
+app.include_router(employees_router)
 
 @app.get("/health")
 def health_check():
