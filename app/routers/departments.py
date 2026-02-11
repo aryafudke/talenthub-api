@@ -5,7 +5,7 @@ from app.database.connection import get_db
 from app.models.department import Department
 from app.models.user import User
 from app.schemas.department import DepartmentCreate, DepartmentUpdate, DepartmentResponse
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_hr_or_admin_user, get_admin_user
 
 router = APIRouter(prefix="/departments", tags=["Departments"])
 
@@ -31,7 +31,7 @@ def get_department(department_id: int, db: Session = Depends(get_db), current_us
 
 # POST create department
 @router.post("/", response_model=DepartmentResponse, status_code=status.HTTP_201_CREATED)
-def create_department(dept_data: DepartmentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_department(dept_data: DepartmentCreate, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
     # check if department name already exists
     existing = db.query(Department).filter(Department.name == dept_data.name).first()
     if existing:
@@ -53,7 +53,7 @@ def create_department(dept_data: DepartmentCreate, db: Session = Depends(get_db)
 
 # PUT update department
 @router.put("/{department_id}", response_model=DepartmentResponse)
-def update_department(department_id: int, dept_data: DepartmentUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_department(department_id: int, dept_data: DepartmentUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
     department = db.query(Department).filter(Department.id == department_id).first()
     if not department:
         raise HTTPException(
@@ -82,7 +82,7 @@ def update_department(department_id: int, dept_data: DepartmentUpdate, db: Sessi
 
 # DELETE department
 @router.delete("/{department_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_department(department_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_department(department_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
     department = db.query(Department).filter(Department.id == department_id).first()
     if not department:
         raise HTTPException(

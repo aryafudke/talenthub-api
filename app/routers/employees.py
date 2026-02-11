@@ -11,7 +11,11 @@ from app.schemas.employee import (
     EmployeeResponse,
     EmployeeWithDepartment
 )
-from app.core.dependencies import get_current_user
+from app.core.dependencies import (
+    get_current_user, 
+    get_admin_user, 
+    get_hr_or_admin_user
+)
 from app.models.user import User
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
@@ -22,7 +26,7 @@ router = APIRouter(prefix="/employees", tags=["Employees"])
 def create_employee(
     employee_data: EmployeeCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_hr_or_admin_user)
 ):
     # check if employee_id already exists
     existing_emp_id = db.query(Employee).filter(Employee.employee_id == employee_data.employee_id).first()
@@ -129,7 +133,7 @@ def update_employee(
     id: int,
     employee_data: EmployeeUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_hr_or_admin_user)
 ):
     employee = db.query(Employee).filter(Employee.id == id).first()
     
@@ -178,7 +182,7 @@ def update_employee(
 def delete_employee(
     id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_admin_user)
 ):
     employee = db.query(Employee).filter(Employee.id == id).first()
     
