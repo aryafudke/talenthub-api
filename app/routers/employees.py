@@ -17,6 +17,8 @@ from app.core.dependencies import (
     get_hr_or_admin_user
 )
 from app.models.user import User
+from app.services.audit_service import create_audit_log, AuditAction
+from app.models.audit_log import AuditLog
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -57,6 +59,18 @@ def create_employee(
     db.add(new_employee)
     db.commit()
     db.refresh(new_employee)
+    create_audit_log(
+        db=db,
+        user=current_user,
+        action=AuditAction.CREATE_EMPLOYEE,
+        entity_type="employee",
+        entity_id=new_employee.id,
+        details={
+            "employee_id": new_employee.employee_id,
+            "name": f"{new_employee.first_name} {new_employee.last_name}",
+            "email": new_employee.email
+        }
+    )
     
     return new_employee
 
@@ -145,7 +159,8 @@ def update_employee(
     
     # get only the fields that were actually provided (not None)
     update_data = employee_data.model_dump(exclude_unset=True)
-    
+     # Store old values for audit log
+    old_values = {field: getattr(employee, field) for field in update_data.keys()}   
     # If email is being updated, check its not already taken
     if "email" in update_data:
         existing = db.query(Employee).filter(
@@ -173,7 +188,18 @@ def update_employee(
     
     db.commit()
     db.refresh(employee)
-    
+    create_audit_log(
+        db=db,
+        user=current_user,
+        action=AuditAction.UPDATE_EMPLOYEE,
+        entity_type="employee",
+        entity_id=employee.id,
+        details={
+            "changed_fields": list(update_data.keys()),
+            "old_values": {k: str(v) for k, v in old_values.items()},
+            "new_values": {k: str(v) for k, v in update_data.items()}
+        }
+    )
     return employee
 
 
@@ -191,8 +217,22 @@ def delete_employee(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Employee not found"
         )
-    
+    employee_info = {
+        "employee_id": employee.employee_id,
+        "name": f"{employee.first_name} {employee.last_name}",
+        "email": employee.email
+    }
     db.delete(employee)
     db.commit()
-    
+    # Need to create new log since employee is deleted
+    audit_log = AuditLog(
+        user_id=current_user.id,
+        action=AuditAction.DELETE_EMPLOYEE,
+        entity_type="employee",
+        entity_id=id,
+        details=employee_info
+    )
+    db.add(audit_log)
+    db.commit()
     return None  # 204 No Content
+
