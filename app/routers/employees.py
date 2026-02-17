@@ -19,6 +19,12 @@ from app.core.dependencies import (
 from app.models.user import User
 from app.services.audit_service import create_audit_log, AuditAction
 from app.models.audit_log import AuditLog
+from app.core.exceptions import (
+    EmployeeNotFoundException,
+    DepartmentNotFoundException,
+    DuplicateEmailException,
+    DuplicateEmployeeIdException
+)
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -33,26 +39,17 @@ def create_employee(
     # check if employee_id already exists
     existing_emp_id = db.query(Employee).filter(Employee.employee_id == employee_data.employee_id).first()
     if existing_emp_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Employee ID '{employee_data.employee_id}' already exists"
-        )
+       raise DuplicateEmployeeIdException(employee_data.employee_id) 
     
     # check if email already exists
     existing_email = db.query(Employee).filter(Employee.email == employee_data.email).first()
     if existing_email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
-        )
+        raise DuplicateEmailException(employee_data.email) 
     
     # check if department exists
     department = db.query(Department).filter(Department.id == employee_data.department_id).first()
     if not department:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Department with id {employee_data.department_id} not found"
-        )
+        raise DepartmentNotFoundException(employee_data.department_id) 
     
     # create employee
     new_employee = Employee(**employee_data.model_dump())
@@ -129,10 +126,7 @@ def get_employee(
     employee = db.query(Employee).filter(Employee.id == id).first()
     
     if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Employee not found"
-        )
+        raise EmployeeNotFoundException(id)
     
     # create response with department name
     response = EmployeeWithDepartment.model_validate(employee)
@@ -152,10 +146,7 @@ def update_employee(
     employee = db.query(Employee).filter(Employee.id == id).first()
     
     if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Employee not found"
-        )
+       raise EmployeeNotFoundException(id)
     
     # get only the fields that were actually provided (not None)
     update_data = employee_data.model_dump(exclude_unset=True)
@@ -213,10 +204,7 @@ def delete_employee(
     employee = db.query(Employee).filter(Employee.id == id).first()
     
     if not employee:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Employee not found"
-        )
+        raise EmployeeNotFoundException(id)
     employee_info = {
         "employee_id": employee.employee_id,
         "name": f"{employee.first_name} {employee.last_name}",
