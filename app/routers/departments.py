@@ -7,6 +7,10 @@ from app.models.user import User
 from app.schemas.department import DepartmentCreate, DepartmentUpdate, DepartmentResponse
 from app.core.dependencies import get_current_user, get_hr_or_admin_user, get_admin_user
 from app.services.audit_service import create_audit_log, AuditAction
+from app.core.exceptions import (
+    DepartmentNotFoundException,
+    DuplicateDepartmentNameException
+)
 router = APIRouter(prefix="/departments", tags=["Departments"])
 
 
@@ -23,10 +27,8 @@ def get_departments(db: Session = Depends(get_db), current_user: User = Depends(
 def get_department(department_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     department = db.query(Department).filter(Department.id == department_id).first()
     if not department:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Department not found"
-        )
+        raise DepartmentNotFoundException(id)
+    
     return department
 
 # POST create department
@@ -35,10 +37,7 @@ def create_department(dept_data: DepartmentCreate, db: Session = Depends(get_db)
     # check if department name already exists
     existing = db.query(Department).filter(Department.name == dept_data.name).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Department name already exists"
-        )
+        raise DuplicateDepartmentNameException(dept_data.name)
     
     new_department = Department(
         name=dept_data.name,
@@ -71,10 +70,7 @@ def update_department(
 ):
     department = db.query(Department).filter(Department.id == id).first()
     if not department:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Department not found"
-        )
+        raise DepartmentNotFoundException(id)
     
     update_data = department_data.model_dump(exclude_unset=True)
     
@@ -88,10 +84,7 @@ def update_department(
             Department.id != id
         ).first()
         if existing:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Department name already exists"
-            )
+            raise DuplicateDepartmentNameException(update_data["name"])
     
     # Update fields
     for field, value in update_data.items():
@@ -125,10 +118,7 @@ def delete_department(
 ):
     department = db.query(Department).filter(Department.id == id).first()
     if not department:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Department not found"
-        )
+        raise DepartmentNotFoundException(id)
     
     # Store info before deletion
     department_info = {
@@ -151,3 +141,5 @@ def delete_department(
     )
     
     return None
+
+
