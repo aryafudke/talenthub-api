@@ -195,7 +195,7 @@ def update_employee(
 
 
 # DELETE - Remove employee
-@router.delete("/{employee_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_employee(
     id: int,
     db: Session = Depends(get_db),
