@@ -1,4 +1,4 @@
-# 🏢 TalentHub API
+# TalentHub API
 
 > **Employee Management System with AI-Powered Natural Language Search**
 
@@ -12,42 +12,42 @@ A production-ready REST API built with FastAPI, featuring JWT authentication, ro
 
 ---
 
-## ✨ Features
+## Features
 
-### 🔐 Authentication & Authorization
+### Authentication & Authorization
 - JWT-based authentication with secure token management
 - Role-Based Access Control (RBAC) with three roles: Admin, HR, User
 - Password hashing using bcrypt
 
-### 👥 Employee Management
+### Employee Management
 - Complete CRUD operations for employees
 - Department management with foreign key relationships
 - Pagination and filtering support
 
-### 🤖 AI-Powered Smart Search
+### AI-Powered Smart Search
 - Natural language query processing using Google Gemini
 - Convert queries like *"senior engineers in Mumbai earning above 15 LPA"* into database filters
 - Intelligent fallback for unclear queries
 
-### 📊 Reports & Analytics
+### Reports & Analytics
 - Summary statistics (total employees, departments, salary averages)
 - Department-wise breakdown
 - Hiring trends analysis
 - SQL aggregations (COUNT, AVG, SUM, GROUP BY)
 
-### 📝 Audit Logging
+### Audit Logging
 - Track all create, update, delete operations
 - Records who did what and when
 - Filterable audit logs for compliance
 
-### ⚠️ Error Handling
+### Error Handling
 - Custom exception classes
 - Global exception handlers
 - Consistent error response format
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -64,7 +64,7 @@ A production-ready REST API built with FastAPI, featuring JWT authentication, ro
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 ```
 talenthub-api/
 ├── app/
@@ -102,7 +102,7 @@ talenthub-api/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Python 3.11+
@@ -150,7 +150,7 @@ uvicorn app.main:app --reload
 
 ---
 
-## 📚 API Endpoints
+## API Endpoints
 
 ### Authentication
 | Method | Endpoint | Description | Access |
